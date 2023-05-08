@@ -91,6 +91,16 @@ def detect_collision(player_object: object, item_object: object) -> bool:
     return player_rect.colliderect(item_rect)
 
 
+def play_collision_sound_effect(item_name: str):
+    if item_name == "pakeka":
+        sound = mixer.Sound("../audios/sound_effect_eat.wav")
+    elif item_name == "salada":
+        sound = mixer.Sound("../audios/sound_effect_duvido.wav")
+    else:
+        sound = mixer.Sound("../audios/sound_effect_power_up.wav")
+    mixer.find_channel().play(sound)
+
+
 def draw_collision(img_size, name):
     image = pygame.image.load(f"../images/{name}.png")
     scale_factor = img_size / image.get_width()
@@ -165,8 +175,10 @@ def get_level(level: int, reset=False) -> dict:
 def play_music(audio_file=None):
     mixer.init()
     dir = "../audios"
+    audios_list = os.listdir(dir)
+    audios_list = [audio for audio in audios_list if not audio.startswith("sound_effect")]
     if not audio_file:
-        audio_file = random.choice(os.listdir(dir))
+        audio_file = random.choice(audios_list)
     filename = os.path.join(dir, audio_file)
     mixer.music.load(filename)
     mixer.music.play()

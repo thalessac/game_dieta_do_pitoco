@@ -1,5 +1,6 @@
 # Example file showing a circle moving on screen
 import pygame
+from pygame import mixer
 from modules.game_objects import Player, Item
 from modules.utils import detect_collision
 from modules.utils import (
@@ -9,6 +10,7 @@ from modules.utils import (
     write_lifes,
     random_throw_item,
     play_music,
+    play_collision_sound_effect,
 )
 
 from modules.menu import Menu
@@ -121,12 +123,13 @@ while running:
             items.append(Item(screen=screen, img_size=75, name=item_name))
 
         for item in items:
-            if bomb_flag and item_name == "salada":
+            if bomb_flag and item.name == "salada":
                 item.removed = True
                 items.remove(item)
             item.draw()
             item.move(speed=items_speed, dt=dt)
             if detect_collision(player_object=pitoco, item_object=item):
+                play_collision_sound_effect(item.name)
                 item.removed = True
                 items.remove(item)
                 if item.name == "pakeka":
