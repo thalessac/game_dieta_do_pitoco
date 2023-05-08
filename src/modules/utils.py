@@ -12,19 +12,47 @@ def detect_border(width: float, height: float, x: float, y: float) -> bool:
     return False
 
 
-def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag):
+def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag, freeze_flag):
     extra_life_weight = 0 if level <= 4 else 1 if level > 4 and level < 10 else 3
     speed_up_weight = 3 if level <= 3 else 5 if level > 3 and level < 10 else 7
     freeze_weight = 3 if level > 3 else 1
-    bomb_weight = 1 if level <= 3 else 2 if level > 5 and level < 10 else 7
+    bomb_weight = 1 if level <= 3 else 2 if level > 5 and level < 10 else 5
+    if level < 5:
+        extra_life_weight = 0
+        speed_up_weight = 1
+        freeze_weight = 0
+        bomb_weight = 1
+    elif level >= 5 and level <= 10:
+        extra_life_weight = 1
+        speed_up_weight = 3
+        freeze_weight = 1
+        bomb_weight = 2
+    elif level >= 10 and level <= 20:
+        extra_life_weight = 3
+        speed_up_weight = 5
+        freeze_weight = 3
+        bomb_weight = 3
+    elif level > 20 and level <= 30:
+        extra_life_weight = 5
+        speed_up_weight = 7
+        freeze_weight = 5
+        bomb_weight = 3
+    elif level > 30:
+        extra_life_weight = 5
+        speed_up_weight = 10
+        freeze_weight = 7
+        bomb_weight = 5
     if bomb_flag:
         salada_weight = 0
-        extra_life_weight = 0
-        speed_up_weight = 0
-        freeze_weight = 0
+        extra_life_weight = 1 if level >= 10 else 0
+        speed_up_weight = 1
+        freeze_weight = 1
         bomb_weight = 0
+    if freeze_flag:
+        freeze_weight = 0
+        extra_life_weight = 1 if level >= 15 else 0
 
-    item_name = random.choice(
+    item_list = (
         ["pakeka"] * pakeka_weight
         + ["salada"] * salada_weight
         + ["extra_life"] * extra_life_weight
@@ -32,6 +60,8 @@ def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag):
         + ["freeze"] * freeze_weight
         + ["bomb"] * bomb_weight
     )
+    random.shuffle(item_list)
+    item_name = random.choice(item_list)
     return item_name
 
 
@@ -81,11 +111,12 @@ def write_lifes(screen: object, font: object, lifes: list):
 
 def get_level(level: int, reset=False) -> dict:
     level = level - 1
+    score_increment = 6
 
     initial_pitoco_speed = 900
-    initial_item_frequency = 100
+    initial_item_frequency = 150
     initial_items_speed = 150
-    initial_score_goal = 10
+    initial_score_goal = score_increment
     initial_pakeka_weight = 80
     initial_salada_weight = 20
 
@@ -100,16 +131,20 @@ def get_level(level: int, reset=False) -> dict:
         )
 
     min_pitoco_speed = 400
-    min_item_frequency = 5 if level >= 20 else 15
+    min_item_frequency = 8 if level >= 20 else 15
     max_items_speed = 1000
-    min_pakeka_weight = 20
+    min_pakeka_weight = 30
 
     pitoco_speed = max(initial_pitoco_speed - level * 50, min_pitoco_speed)
-    item_frequency = max(initial_item_frequency - level * 10, min_item_frequency)
+    if level <= 20:
+        item_frequency = max(initial_item_frequency - level * 15, min_item_frequency)
+    else:
+        initial_item_frequency = 15
+        item_frequency = max(initial_item_frequency - (level - 20) * 2, min_item_frequency)
     items_speed = (
         initial_items_speed + level * 50 if initial_items_speed + level * 50 < max_items_speed else max_items_speed
     )
-    score_goal = initial_score_goal + level * 8
+    score_goal = initial_score_goal + level * score_increment
     pakeka_weight = max(int(initial_pakeka_weight - level * 8), min_pakeka_weight)
     salada_weight = int(100 - pakeka_weight)
 

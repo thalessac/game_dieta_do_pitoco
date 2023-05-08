@@ -9,7 +9,7 @@ class Menu:
         self.screen.fill((0, 0, 0))
         font = pygame.font.SysFont("arial", 40)
         title = font.render("Dieta do Pitoco", True, (255, 255, 255))
-        start_button = font.render("Start", True, (255, 255, 255))
+        start_button = font.render("Aperte barra de espaço para iniciar", True, (255, 255, 255))
         self.screen.blit(
             title,
             (

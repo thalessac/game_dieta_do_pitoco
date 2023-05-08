@@ -21,12 +21,14 @@ pygame.init()
 pygame.font.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dieta do Pitoco")
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 36)
 
 running = True
 dt = 0
 time_on_level = 0
+max_time_on_level = 40  # seconds
 power_up_duration = 15  # seconds
 
 cron_speed_up = 0
@@ -89,7 +91,7 @@ while running:
         pitoco_speed, item_frequency, items_speed, score_goal, pakeka_weight, salada_weight = get_level(max(level))
 
         if speed_up_flag:
-            pitoco_speed = max(pitoco_speed * 1.5, items_speed)
+            pitoco_speed = max(pitoco_speed * 2, items_speed, 1000)
             cron_speed_up += dt
             if cron_speed_up >= power_up_duration:
                 speed_up_flag = False
@@ -110,7 +112,11 @@ while running:
 
         if not counter % item_frequency:
             item_name = random_throw_item(
-                pakeka_weight=pakeka_weight, salada_weight=salada_weight, level=max(level), bomb_flag=bomb_flag
+                pakeka_weight=pakeka_weight,
+                salada_weight=salada_weight,
+                level=max(level),
+                bomb_flag=bomb_flag,
+                freeze_flag=freeze_flag,
             )
             items.append(Item(screen=screen, img_size=75, name=item_name))
 
@@ -165,7 +171,7 @@ while running:
         write_score(screen, font, score, max(level))
         write_lifes(screen, font, lifes)
 
-        if score == score_goal or time_on_level >= 60:
+        if score == score_goal or time_on_level >= max_time_on_level:
             level.add(max(level) + 1)
             time_on_level = 0
 
