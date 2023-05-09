@@ -1,4 +1,3 @@
-# from modules.game_objects import Player, Item
 import random
 import os
 import pygame
@@ -12,13 +11,13 @@ def detect_border(width: float, height: float, x: float, y: float) -> bool:
     return False
 
 
-def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag, freeze_flag):
-    if level < 5:
+def random_throw_item(pakeka_weight: int, salada_weight: int, level: int, bomb_flag: bool, freeze_flag: bool) -> str:
+    if level <= 5:
         extra_life_weight = 0
         speed_up_weight = 1
         freeze_weight = 0
         bomb_weight = 1
-    elif level >= 5 and level <= 10:
+    elif level > 5 and level <= 10:
         extra_life_weight = 1
         speed_up_weight = 3
         freeze_weight = 1
@@ -44,10 +43,10 @@ def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag, freeze_fla
         freeze_weight = 3
         bomb_weight = 2
     elif level > 100:
-        extra_life_weight = 1
-        speed_up_weight = 1
-        freeze_weight = 1
-        bomb_weight = 1
+        extra_life_weight = 2
+        speed_up_weight = 2
+        freeze_weight = 2
+        bomb_weight = 2
     if bomb_flag:
         salada_weight = 0
         extra_life_weight = 1 if level >= 10 else 0
@@ -74,36 +73,56 @@ def random_throw_item(pakeka_weight, salada_weight, level, bomb_flag, freeze_fla
     return item_name
 
 
-def detect_collision(player_object: object, item_object: object) -> bool:
-    player_rect = Rect(
-        player_object.position.x - player_object.img_size / 4,
-        player_object.position.y - player_object.img_size / 4,
-        player_object.player.get_width() / 2.5,
-        player_object.player.get_height() / 2.5,
-    )
-    item_rect = Rect(
-        item_object.position.x,
-        item_object.position.y,
-        item_object.item.get_width(),
-        item_object.item.get_height(),
-    )
-
-    return player_rect.colliderect(item_rect)
+def play_collision_sound_effect(item_name: str) -> None:
+    if item_name == "pakeka":
+        audio_file = random.choice(["pakeka-success.wav", "eating_1.wav", "eating_2.wav", "eating_3.wav"])
+        sound = mixer.Sound(f"../audios/sound_effect/{audio_file}")
+    elif item_name == "salada":
+        sound = mixer.Sound("../audios/sound_effect/duvido.wav")
+    else:
+        sound = mixer.Sound("../audios/sound_effect/power_up.wav")
+    mixer.find_channel().play(sound)
 
 
-def draw_collision(img_size, name):
+def draw_collision(img_size: float, name: str):
     image = pygame.image.load(f"../images/{name}.png")
     scale_factor = img_size / image.get_width()
     image = pygame.transform.scale_by(image, scale_factor)
     return image
 
 
-def write_score(screen: object, font: object, score: str, level: int):
-    score_text = font.render(f"Score: {score} | Level: {str(level)}", True, (255, 255, 255))
+def draw_mute_button(screen: pygame.surface.Surface, img_size: float, muted: bool):
+    if muted:
+        image = pygame.image.load("../images/muted-icon.png")
+    else:
+        image = pygame.image.load("../images/unmuted-icon.png")
+    scale_factor = img_size / image.get_width()
+    position = pygame.Vector2(screen.get_width() / 2, 0)
+    image = pygame.transform.scale_by(image, scale_factor)
+    screen.blit(image, position)
+    return image, position
+
+
+def get_mute_state(event: pygame.event, button: pygame.image, position: pygame.Vector2, muted: bool) -> bool:
+    if event.button == 1:
+        x, y = event.pos
+        buttom_rect = Rect(
+            position.x,
+            position.y,
+            button.get_width(),
+            button.get_height(),
+        )
+        if buttom_rect.collidepoint(x, y):
+            pygame.time.wait(100)
+            return not muted
+
+
+def write_score(screen: pygame.surface.Surface, font: pygame.font.Font, score: int, level: int) -> None:
+    score_text = font.render(f"Score: {score} | Level: {level}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
 
 
-def write_lifes(screen: object, font: object, lifes: list):
+def write_lifes(screen: pygame.surface.Surface, font: pygame.font.Font, lifes: list) -> None:
     heart_image = pygame.image.load("../images/extra_life.png")
     scale_factor = 36 / heart_image.get_width()
     heart_image = pygame.transform.scale_by(heart_image, scale_factor)
@@ -118,7 +137,7 @@ def write_lifes(screen: object, font: object, lifes: list):
     screen.blit(lifes_text, lifes_text_rect)
 
 
-def get_level(level: int, reset=False) -> dict:
+def get_level(level: int, reset: bool = False) -> dict:
     level = level - 1
     score_increment = 6
 
@@ -162,11 +181,17 @@ def get_level(level: int, reset=False) -> dict:
     return pitoco_speed, item_frequency, items_speed, score_goal, pakeka_weight, salada_weight
 
 
-def play_music(audio_file=None):
+def play_music(audio_file: str = None, previous_song: str = None) -> str:
     mixer.init()
     dir = "../audios"
+    audios_list = os.listdir(dir)
+    audios_list = [audio for audio in audios_list if audio.endswith(".wav")]
     if not audio_file:
-        audio_file = random.choice(os.listdir(dir))
+        audio_file = random.choice(audios_list)
+        if previous_song:
+            while audio_file == previous_song:
+                audio_file = random.choice(audios_list)
     filename = os.path.join(dir, audio_file)
     mixer.music.load(filename)
     mixer.music.play()
+    return audio_file

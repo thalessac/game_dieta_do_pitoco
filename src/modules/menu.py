@@ -26,12 +26,13 @@ class Menu:
         )
         pygame.display.update()
 
-    def draw_game_over_screen(self):
+    def draw_game_over_screen(self, score: int):
         self.screen.fill((0, 0, 0))
         font = pygame.font.SysFont("arial", 40)
         title = font.render(
             "Salada? DÚVIDO! Você comeu salada e perdeu o jogo, tente novamente...CADEIA!", True, (255, 255, 255)
         )
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         restart_button = font.render("R - Restart", True, (255, 255, 255))
         quit_button = font.render("Q - Quit", True, (255, 255, 255))
         self.screen.blit(
@@ -39,6 +40,13 @@ class Menu:
             (
                 self.screen.get_width() / 2 - title.get_width() / 2,
                 self.screen.get_height() / 2 - title.get_height() / 3,
+            ),
+        )
+        self.screen.blit(
+            score_text,
+            (
+                self.screen.get_width() / 2 - score_text.get_width() / 2,
+                self.screen.get_height() / 4 + score_text.get_height(),
             ),
         )
         self.screen.blit(
