@@ -1,8 +1,6 @@
 # Example file showing a circle moving on screen
 import pygame
-from pygame import mixer
-from modules.game_objects import Player, Item
-from modules.utils import detect_collision
+from modules.game_objects import Player, Item, detect_collision
 from modules.utils import (
     write_score,
     get_level,
@@ -11,6 +9,8 @@ from modules.utils import (
     random_throw_item,
     play_music,
     play_collision_sound_effect,
+    draw_mute_button,
+    get_mute_state,
 )
 
 from modules.menu import Menu
@@ -49,10 +49,13 @@ score = 0
 level = {1}
 lifes = [1, 1, 1]
 
+muted_state = False
+previous_song = None
+
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 pitoco = Player(screen=screen, position=player_pos, img_size=150, name="pitoco")
 
-background = pygame.image.load("../images/background_2.png")
+background = pygame.image.load("../images/background.png")
 
 play_music(audio_file="a-paritr-de-amanhã-dieta.wav")
 
@@ -70,8 +73,8 @@ while running:
             game_state = "game"
             game_over = False
 
-    if game_state == "game_over":
-        menu.draw_game_over_screen()
+    elif game_state == "game_over":
+        menu.draw_game_over_screen(score)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_r]:
             game_state = "start_menu"
@@ -84,11 +87,17 @@ while running:
         if keys[pygame.K_q]:
             running = False
 
-    if game_state == "game":
+    elif game_state == "game":
         screen.blit(background, (0, 0))
 
-        if not pygame.mixer.music.get_busy():
-            play_music()
+        button, position = draw_mute_button(screen=screen, img_size=36, muted=muted_state)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            muted_state = get_mute_state(event=event, button=button, position=position, muted=muted_state)
+        if muted_state:
+            pygame.mixer.music.pause()
+
+        if not pygame.mixer.music.get_busy() and muted_state is False:
+            previous_song = play_music(audio_file=None, previous_song=previous_song)
 
         pitoco_speed, item_frequency, items_speed, score_goal, pakeka_weight, salada_weight = get_level(max(level))
 

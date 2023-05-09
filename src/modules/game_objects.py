@@ -1,5 +1,6 @@
 from random import randrange
 import pygame
+from pygame import Rect
 from pygame.surface import Surface
 from modules.utils import detect_border
 
@@ -56,3 +57,20 @@ class Item:
 
     def move(self, speed: float, dt: float):
         self.position.y += speed * dt
+
+
+def detect_collision(player_object: Player, item_object: Item) -> bool:
+    player_rect = Rect(
+        player_object.position.x - player_object.img_size / 4,
+        player_object.position.y - player_object.img_size / 4,
+        player_object.player.get_width() / 2.5,
+        player_object.player.get_height() / 2.5,
+    )
+    item_rect = Rect(
+        item_object.position.x,
+        item_object.position.y,
+        item_object.item.get_width(),
+        item_object.item.get_height(),
+    )
+
+    return player_rect.colliderect(item_rect)
